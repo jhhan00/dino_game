@@ -21,7 +21,7 @@ let dino = {
     width: 50,
     height: 50,
     draw() {
-        ctx.fillStyle = "green";
+        ctx.fillStyle = "transparent";
         ctx.fillRect(this.x, this.y,  this.width, this.height);
         ctx.drawImage(img_dino, this.x, this.y);
     }
