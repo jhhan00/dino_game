@@ -4,11 +4,15 @@
  * 애니메이션화가 필수
  */
 
+//==========캔버스를 이용해서 그림을 그리기 위한 최소한의 코드==========
 let canvas1 = document.getElementById("canvas1");
 let ctx = canvas1.getContext("2d");
 
-canvas1.width = window.innerWidth - 100;
-canvas1.height = window.innerHeight - 100;  // 캔버스를 이용해서 그림을 그리기 위한 최소한의 코드
+console.log(`window.innerWidth = ${window.innerWidth}, window.innerHeight = ${window.innerHeight}`);
+
+canvas1.width  = window.innerWidth - 100;
+canvas1.height = window.innerHeight - 900;
+//==========================================================
 
 class Character {
     constructor(x,y,w,h,color,img_obj) {
@@ -39,29 +43,15 @@ let animation;                      // 게임 실행용 변수 - 게임 진행�
 let dino_jumping = false;           // 공룡이 점프할 때
 let jump_key_interrupt = false;     // 스페이스 키가 여러 번 눌리지 않도록
 let jump_timer = 0;                 // 점프 시간 계산
-let timer = 0;
-let cactus_arr = [];    // 장애물 array
+let frame_timer = 0;                // 프레임 상 지난 시간
+let cactus_arr = [];                // 장애물 array
+let total_score = 0;                // 점수
+let interval_score;                 // setInterval 저장용 변수
 //============================================================
-
 
 
 // 다이노 정의
 let dino = new Character(10, 200, 50, 50, "green", img_dino);
-
-
-class Cactus {
-    constructor() {
-        this.x = 500;
-        this.y = 200;
-        this.width = 50;
-        this.height = 50;
-    }
-    draw() {
-        ctx.fillStyle = "red";
-        ctx.fillRect(this.x, this.y,  this.width, this.height);
-        ctx.drawImage(img_cactus, this.x, this.y);
-    }
-}
 
 // 충돌 확인
 function collisionCheck(dino, cactus) {
@@ -73,6 +63,7 @@ function collisionCheck(dino, cactus) {
         // 게임 오버
         ctx.clearRect(0, 0, canvas1.width, canvas1.height);
         cancelAnimationFrame(animation);
+        clearInterval(interval_score);
     }
 }
 
@@ -82,7 +73,7 @@ function collisionCheck(dino, cactus) {
  */
 function executeByFrame() {
     animation = requestAnimationFrame(executeByFrame);
-    timer++;
+    frame_timer++;
 
     ctx.clearRect(0, 0, canvas1.width, canvas1.height);     // 캔버스에 있는 그림 지우기
 
@@ -104,11 +95,11 @@ function executeByFrame() {
         jump_key_interrupt = false;
     }
 
-    if(timer % 180 === 0) {
+    if(frame_timer % 180 === 0) {
         const cactus1 = new Character(600, 200, 50, 50, "red", img_cactus);
         cactus_arr.push(cactus1);
         cactus1.draw();
-        timer = 0;
+        frame_timer = 0;
     }
     
     cactus_arr.forEach((item, index, o) => {
@@ -124,9 +115,11 @@ function executeByFrame() {
     });
 
     dino.draw();
+    document.querySelector("#score").innerHTML = total_score;
 }
 
 executeByFrame();
+interval_score = setInterval(() => { total_score++; console.log(total_score); }, 1000);
 
 // 다이노 점프하기
 document.addEventListener("keydown", function(e) {
