@@ -36,6 +36,8 @@ img_dino.src = "dino.png";
 
 const img_cactus = new Image();
 img_cactus.src = "cactus.png";
+
+const restart_button = document.querySelector("#restart");
 //============================================================
 
 //===========================변수=============================
@@ -49,9 +51,20 @@ let total_score = 0;                // 점수
 let interval_score;                 // setInterval 저장용 변수
 //============================================================
 
-
 // 다이노 정의
 let dino = new Character(10, 200, 50, 50, "green", img_dino);
+
+function initGame() {
+    dino_jumping = false;
+    jump_key_interrupt = false;
+    jump_timer = 0;
+    frame_timer = 0;
+    cactus_arr = [];
+    total_score = 0;
+    interval_score = setInterval(() => { total_score++; }, 1000);
+    console.log("Game Start");
+    restart_button.style.display = "none";
+}
 
 // 충돌 확인
 function collisionCheck(dino, cactus) {
@@ -64,6 +77,7 @@ function collisionCheck(dino, cactus) {
         ctx.clearRect(0, 0, canvas1.width, canvas1.height);
         cancelAnimationFrame(animation);
         clearInterval(interval_score);
+        restart_button.style.display = "inline";
     }
 }
 
@@ -115,11 +129,17 @@ function executeByFrame() {
     });
 
     dino.draw();
-    document.querySelector("#score").innerHTML = total_score;
+
+    const tmp_score = String(total_score).padStart(5, "0");
+    document.querySelector("#score").innerHTML = tmp_score;
 }
 
-executeByFrame();
-interval_score = setInterval(() => { total_score++; console.log(total_score); }, 1000);
+function game_start() {
+    initGame();
+    executeByFrame();
+}
+
+game_start();
 
 // 다이노 점프하기
 document.addEventListener("keydown", function(e) {
@@ -127,4 +147,8 @@ document.addEventListener("keydown", function(e) {
         dino_jumping = true;
         jump_key_interrupt = true;
     }
+});
+
+restart_button.addEventListener("click", function(e) {
+    game_start();
 });
