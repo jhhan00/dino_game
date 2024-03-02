@@ -33,8 +33,14 @@ class Character {
 }
 
 //===========================상수=============================
-const img_dino = new Image();
-img_dino.src = "img/dino.png";
+const img_dino_run_0 = new Image();
+img_dino_run_0.src = "img/dino-run-0.png";
+
+const img_dino_run_1 = new Image();
+img_dino_run_1.src = "img/dino-run-1.png";
+
+const img_dino_end = new Image();
+img_dino_end.src = "img/dino-end.png";
 
 const img_cactus = new Image();
 img_cactus.src = "img/cactus.png";
@@ -51,12 +57,11 @@ let frame_timer = 0;                // 프레임 상 지난 시간
 let cactus_arr = [];                // 장애물 array
 let total_score = 0;                // 점수
 let interval_score;                 // setInterval 저장용 변수
+let dino = new Character(10, 200, 50, 50, "transparent", img_dino_run_0);   // 다이노 정의
 //============================================================
 
-// 다이노 정의
-let dino = new Character(10, 200, 50, 50, "green", img_dino);
-
 function initGame() {
+    animation = "";
     dino_jumping = false;
     jump_key_interrupt = false;
     jump_timer = 0;
@@ -76,6 +81,9 @@ function collisionCheck(dino, cactus) {
     if(dx < 0 && dy < 0) {
         // 둘 다 0보다 작으면 충돌로 가정
         // 게임 오버
+        dino.img = img_dino_end;
+        dino.draw();
+
         ctx.clearRect(0, 0, canvas1.width, canvas1.height);
         cancelAnimationFrame(animation);
         clearInterval(interval_score);
@@ -85,11 +93,17 @@ function collisionCheck(dino, cactus) {
 
 /**
  * 1초에 XX번 코드 실행하기 - 이 코드는 모니터 FPS에 따라 다르다
- * 장애물은 2~3초에 한번씩 등장하면 될 것임
+ * 장애물은 랜덤한 시간에 나올 수 있도록.. 일단은 3초에 1개로 진행
  */
 function executeByFrame() {
     animation = requestAnimationFrame(executeByFrame);
     frame_timer++;
+
+    if(frame_timer % 8 === 0 || frame_timer % 8 === 1 || frame_timer % 8 === 2 || frame_timer % 8 === 3) {
+        dino.img = img_dino_run_0;
+    } else {
+        dino.img = img_dino_run_1;
+    }
 
     ctx.clearRect(0, 0, canvas1.width, canvas1.height);     // 캔버스에 있는 그림 지우기
 
@@ -115,7 +129,6 @@ function executeByFrame() {
         const cactus1 = new Character(600, 200, 50, 50, "red", img_cactus);
         cactus_arr.push(cactus1);
         cactus1.draw();
-        frame_timer = 0;
     }
     
     cactus_arr.forEach((item, index, o) => {
