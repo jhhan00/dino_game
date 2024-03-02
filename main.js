@@ -88,7 +88,9 @@ function initGame() {
 
 // 충돌 확인
 function collisionCheck(dino, cactus) {
-    const dx = cactus.x - (dino.x + dino.width) + 10;   // 실제 장애물에 닿는 곳 고려 -> +10 
+    // 실제 위치를 고려하면 2개의 경우를 생각해서 위치를 정해주기
+    let dx = (cactus.x > dino.x) ? cactus.x - (dino.x + dino.width) : dino.x - (cactus.x + cactus.width);
+    dx += 10;  // 실제 장애물에 닿는 곳 고려 -> +10 
     const dy = cactus.y - (dino.y + dino.height);
 
     if(dx < 0 && dy < 0) {
