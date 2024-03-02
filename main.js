@@ -13,10 +13,10 @@ console.log(`window.innerWidth = ${window.innerWidth}, window.innerHeight = ${wi
 // canvas1.width  = window.innerWidth - 100;
 // canvas1.height = window.innerHeight - 900;
 canvas1.width = 900;
-canvas1.height = 260;
+canvas1.height = 270;
 //==========================================================
 
-class Character {
+class GameObject {
     constructor(x,y,w,h,color,img_obj) {
         this.x = x;
         this.y = y;
@@ -45,19 +45,32 @@ img_dino_end.src = "img/dino-end.png";
 const img_cactus = new Image();
 img_cactus.src = "img/cactus.png";
 
+const img_ground1 = new Image();
+img_ground1.src = "img/ground.png";
+
+const img_ground2 = new Image();
+img_ground2.src = "img/ground.png";
+
+const ZERO = 0;
+const GROUND_WIDTH = 2399;      // ground.png의 가로 사이즈
+const GROUND_Y = 235;           // ground의 y축 좌표
+const MOVING_SPEED = 3;         // ground 혹은 cactus의 이동속도
+
 const restart_button = document.querySelector("#restart");
 //============================================================
 
 //===========================변수=============================
-let animation;                      // 게임 실행용 변수 - 게임 진행과 게임 오버를 하게 해준다.
-let dino_jumping = false;           // 공룡이 점프할 때
-let jump_key_interrupt = false;     // 스페이스 키가 여러 번 눌리지 않도록
-let jump_timer = 0;                 // 점프 시간 계산
-let frame_timer = 0;                // 프레임 상 지난 시간
-let cactus_arr = [];                // 장애물 array
-let total_score = 0;                // 점수
-let interval_score;                 // setInterval 저장용 변수
-let dino = new Character(10, 200, 50, 50, "transparent", img_dino_run_0);   // 다이노 정의
+let animation;                                                              // 게임 실행용 변수 - 게임 진행과 게임 오버를 하게 해준다.
+let dino_jumping = false;                                                   // 공룡이 점프할 때
+let jump_key_interrupt = false;                                             // 스페이스 키가 여러 번 눌리지 않도록
+let jump_timer = 0;                                                         // 점프 시간 계산
+let frame_timer = 0;                                                        // 프레임 상 지난 시간
+let cactus_arr = [];                                                        // 장애물 array
+let total_score = 0;                                                        // 점수
+let interval_score;                                                         // setInterval 저장용 변수
+let dino = new GameObject(10, 200, 50, 50, "green", img_dino_run_0);        // 다이노 정의
+let ground1 = new GameObject(ZERO, GROUND_Y, GROUND_WIDTH, 24, "transparent", img_ground1);
+let ground2 = new GameObject(GROUND_WIDTH, GROUND_Y, GROUND_WIDTH, 24, "transparent", img_ground2);
 //============================================================
 
 function initGame() {
@@ -84,7 +97,7 @@ function collisionCheck(dino, cactus) {
         dino.img = img_dino_end;
         dino.draw();
 
-        ctx.clearRect(0, 0, canvas1.width, canvas1.height);
+        // ctx.clearRect(0, 0, canvas1.width, canvas1.height);
         cancelAnimationFrame(animation);
         clearInterval(interval_score);
         restart_button.style.display = "inline";
@@ -97,15 +110,15 @@ function collisionCheck(dino, cactus) {
  */
 function executeByFrame() {
     animation = requestAnimationFrame(executeByFrame);
+    ctx.clearRect(0, 0, canvas1.width, canvas1.height);     // 캔버스에 있는 그림 지우기
     frame_timer++;
 
+    // 달리는 이미지 연출
     if(frame_timer % 8 === 0 || frame_timer % 8 === 1 || frame_timer % 8 === 2 || frame_timer % 8 === 3) {
         dino.img = img_dino_run_0;
     } else {
         dino.img = img_dino_run_1;
     }
-
-    ctx.clearRect(0, 0, canvas1.width, canvas1.height);     // 캔버스에 있는 그림 지우기
 
     if(dino_jumping) {
         dino.y -= 5;
@@ -120,19 +133,19 @@ function executeByFrame() {
         dino_jumping = false;
     }
 
-    if(dino.y === 200) {
+    if(dino.y > 200 || dino.y === 200) {
         jump_timer = 0;
         jump_key_interrupt = false;
     }
 
     if(frame_timer % 180 === 0) {
-        const cactus1 = new Character(600, 200, 50, 50, "red", img_cactus);
+        const cactus1 = new GameObject(600, 200, 40, 50, "red", img_cactus);
         cactus_arr.push(cactus1);
         cactus1.draw();
     }
     
     cactus_arr.forEach((item, index, o) => {
-        item.x -= 3;
+        item.x -= MOVING_SPEED;
         if(item.x < -50) {
             // 제거
             o.splice(index, 1);
@@ -143,13 +156,27 @@ function executeByFrame() {
         item.draw();
     });
 
+    ground1.draw();
+    ground2.draw();
     dino.draw();
+    
+    ground1.x -= MOVING_SPEED;
+    ground2.x -= MOVING_SPEED;
+    if(ground1.x < GROUND_WIDTH * (-1)) {
+        ground1.x = ground2.x + GROUND_WIDTH;
+    }
+    if(ground2.x < GROUND_WIDTH * (-1)) {
+        ground2.x = ground1.x + GROUND_WIDTH;
+    }
 
     const tmp_score = String(total_score).padStart(5, "0");
     document.querySelector("#score").innerHTML = tmp_score;
 }
 
 function game_start() {
+    ground1.x = ZERO;
+    ground2.x = GROUND_WIDTH;
+
     initGame();
     executeByFrame();
 }
