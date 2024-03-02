@@ -8,8 +8,6 @@
 let canvas1 = document.getElementById("canvas1");
 let ctx = canvas1.getContext("2d");
 
-console.log(`window.innerWidth = ${window.innerWidth}, window.innerHeight = ${window.innerHeight}`);
-
 // canvas1.width  = window.innerWidth - 100;
 // canvas1.height = window.innerHeight - 900;
 canvas1.width = 900;
@@ -55,6 +53,7 @@ const ZERO = 0;
 const GROUND_WIDTH = 2399;      // ground.png의 가로 사이즈
 const GROUND_Y = 235;           // ground의 y축 좌표
 const MOVING_SPEED = 3;         // ground 혹은 cactus의 이동속도
+const CACTUS_APPEAR_RATE = 180;
 
 const restart_button = document.querySelector("#restart");
 //============================================================
@@ -63,25 +62,39 @@ const restart_button = document.querySelector("#restart");
 let animation;                                                              // 게임 실행용 변수 - 게임 진행과 게임 오버를 하게 해준다.
 let dino_jumping = false;                                                   // 공룡이 점프할 때
 let jump_key_interrupt = false;                                             // 스페이스 키가 여러 번 눌리지 않도록
+
 let jump_timer = 0;                                                         // 점프 시간 계산
 let frame_timer = 0;                                                        // 프레임 상 지난 시간
+let obstacle_timer = 0;                                                     // 장애물이 나타나는 시간 계산용 변수
+
 let cactus_arr = [];                                                        // 장애물 array
 let total_score = 0;                                                        // 점수
 let interval_score;                                                         // setInterval 저장용 변수
+let cactus_appear;                                                          // cactus가 나타나는 주기
+
 let dino = new GameObject(10, 200, 50, 50, "green", img_dino_run_0);        // 다이노 정의
 let ground1 = new GameObject(ZERO, GROUND_Y, GROUND_WIDTH, 24, "transparent", img_ground1);
 let ground2 = new GameObject(GROUND_WIDTH, GROUND_Y, GROUND_WIDTH, 24, "transparent", img_ground2);
 //============================================================
 
+// 장애물 등장 주기 만드는 함수
+function random_appear_time() {
+    return Math.floor(Math.random() * 50) + CACTUS_APPEAR_RATE;
+}
+
+// 게임 시작 전 변수 초기화
 function initGame() {
     animation = "";
     dino_jumping = false;
     jump_key_interrupt = false;
     jump_timer = 0;
     frame_timer = 0;
+    obstacle_timer = 0;
     cactus_arr = [];
     total_score = 0;
     interval_score = setInterval(() => { total_score++; }, 1000);
+    cactus_appear = random_appear_time(); 
+
     console.log("Game Start");
     restart_button.style.display = "none";
 }
@@ -114,6 +127,7 @@ function executeByFrame() {
     animation = requestAnimationFrame(executeByFrame);
     ctx.clearRect(0, 0, canvas1.width, canvas1.height);     // 캔버스에 있는 그림 지우기
     frame_timer++;
+    obstacle_timer++;
 
     // 달리는 이미지 연출
     if(frame_timer % 8 === 0 || frame_timer % 8 === 1 || frame_timer % 8 === 2 || frame_timer % 8 === 3) {
@@ -140,21 +154,23 @@ function executeByFrame() {
         jump_key_interrupt = false;
     }
 
-    if(frame_timer % 180 === 0) {
-        const cactus1 = new GameObject(600, 200, 40, 50, "red", img_cactus);
+    if(obstacle_timer % cactus_appear === 0) {
+        const cactus1 = new GameObject(canvas1.width, 200, 40, 50, "red", img_cactus);
         cactus_arr.push(cactus1);
         cactus1.draw();
+
+        obstacle_timer = 0;
+        cactus_appear = random_appear_time();
+        console.log(`cactus_appear = ${cactus_appear}`);
     }
     
     cactus_arr.forEach((item, index, o) => {
         item.x -= MOVING_SPEED;
         if(item.x < -50) {
-            // 제거
-            o.splice(index, 1);
+            o.splice(index, 1); // 제거
         }
 
         collisionCheck(dino, item);
-
         item.draw();
     });
 
@@ -175,6 +191,7 @@ function executeByFrame() {
     document.querySelector("#score").innerHTML = tmp_score;
 }
 
+// 게임 시작 함수
 function game_start() {
     ground1.x = ZERO;
     ground2.x = GROUND_WIDTH;
