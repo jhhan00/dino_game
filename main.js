@@ -10,8 +10,10 @@ let ctx = canvas1.getContext("2d");
 
 console.log(`window.innerWidth = ${window.innerWidth}, window.innerHeight = ${window.innerHeight}`);
 
-canvas1.width  = window.innerWidth - 100;
-canvas1.height = window.innerHeight - 900;
+// canvas1.width  = window.innerWidth - 100;
+// canvas1.height = window.innerHeight - 900;
+canvas1.width = 900;
+canvas1.height = 260;
 //==========================================================
 
 class Character {
@@ -32,10 +34,10 @@ class Character {
 
 //===========================상수=============================
 const img_dino = new Image();
-img_dino.src = "dino.png";
+img_dino.src = "img/dino.png";
 
 const img_cactus = new Image();
-img_cactus.src = "cactus.png";
+img_cactus.src = "img/cactus.png";
 
 const restart_button = document.querySelector("#restart");
 //============================================================
@@ -68,7 +70,7 @@ function initGame() {
 
 // 충돌 확인
 function collisionCheck(dino, cactus) {
-    const dx = cactus.x - (dino.x + dino.width);
+    const dx = cactus.x - (dino.x + dino.width) + 10;   // 실제 장애물에 닿는 곳 고려 -> +10 
     const dy = cactus.y - (dino.y + dino.height);
 
     if(dx < 0 && dy < 0) {
@@ -92,15 +94,15 @@ function executeByFrame() {
     ctx.clearRect(0, 0, canvas1.width, canvas1.height);     // 캔버스에 있는 그림 지우기
 
     if(dino_jumping) {
-        dino.y -= 4;
+        dino.y -= 5;
         jump_timer++;
     } else {
         if(dino.y < 200) {
-            dino.y += 4;
+            dino.y += 5;
         }
     }
     
-    if(jump_timer > 40) {
+    if(jump_timer > 35) {
         dino_jumping = false;
     }
 
