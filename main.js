@@ -53,7 +53,7 @@ const ZERO = 0;
 const GROUND_WIDTH = 2399;      // ground.png의 가로 사이즈
 const GROUND_Y = 235;           // ground의 y축 좌표
 const MOVING_SPEED = 3;         // ground 혹은 cactus의 이동속도
-const CACTUS_APPEAR_RATE = 180;
+const CACTUS_APPEAR_RATE = 180; // cactus가 나타나는 주기 초기값
 
 const restart_button = document.querySelector("#restart");
 //============================================================
@@ -70,7 +70,8 @@ let obstacle_timer = 0;                                                     // �
 let cactus_arr = [];                                                        // 장애물 array
 let total_score = 0;                                                        // 점수
 let interval_score;                                                         // setInterval 저장용 변수
-let cactus_appear;                                                          // cactus가 나타나는 주기
+let cactus_appear_rate = CACTUS_APPEAR_RATE;                                // cactus가 나오는 기준
+let cactus_appear;                                                          // cactus가 나타나는 주기 저장용 변수
 
 let dino = new GameObject(10, 200, 50, 50, "green", img_dino_run_0);        // 다이노 정의
 let ground1 = new GameObject(ZERO, GROUND_Y, GROUND_WIDTH, 24, "transparent", img_ground1);
@@ -79,7 +80,12 @@ let ground2 = new GameObject(GROUND_WIDTH, GROUND_Y, GROUND_WIDTH, 24, "transpar
 
 // 장애물 등장 주기 만드는 함수
 function random_appear_time() {
-    return Math.floor(Math.random() * 50) + CACTUS_APPEAR_RATE;
+    // 점수가 증가할 때 마다 cacuts가 나오는 주기 짧아지도록 설정
+    if(total_score > 0 && total_score % 5 === 0) {
+        cactus_appear_rate -= 20;
+    }
+
+    return Math.floor(Math.random() * 50) + cactus_appear_rate;
 }
 
 // 게임 시작 전 변수 초기화
@@ -93,6 +99,7 @@ function initGame() {
     cactus_arr = [];
     total_score = 0;
     interval_score = setInterval(() => { total_score++; }, 1000);
+    cactus_appear_rate = CACTUS_APPEAR_RATE;
     cactus_appear = random_appear_time(); 
 
     console.log("Game Start");
